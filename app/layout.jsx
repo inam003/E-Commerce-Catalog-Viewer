@@ -4,8 +4,8 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Payment System",
-  description: "Integrate Stripe to accept payments.",
+  title: "E-commerce Platform",
+  description: "A platform to buy products.",
 };
 
 export default function RootLayout({ children }) {
