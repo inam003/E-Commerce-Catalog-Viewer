@@ -14,7 +14,7 @@ const categories = [
   "Electronics",
   "Clothing",
   "Home & Garden",
-  "Sports & Outdoors",
+  "Sports",
 ];
 
 const AllProducts = () => {

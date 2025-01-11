@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export function ProductCard({ product, onAddToCart }) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden cursor-pointer">
       <CardContent className="p-4">
         <div className="relative h-48 mb-4">
           <Image
