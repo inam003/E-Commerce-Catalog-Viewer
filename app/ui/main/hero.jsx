@@ -25,7 +25,7 @@ const Hero = () => {
             Discover Amazing Products
           </h1>
           <Link href={"/products"}>
-            <Button variant="secondary" className="px-8">
+            <Button variant="outline" className="px-8">
               Explore
             </Button>
           </Link>
