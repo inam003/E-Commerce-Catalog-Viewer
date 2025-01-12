@@ -15,9 +15,12 @@ import toast from "react-hot-toast";
 export function ProductDetails({ product, onClose }) {
   const [quantity, setQuantity] = useState(1);
   const [sheetOpen, setSheetOpen] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
   const addToCartProduct = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const response = await fetch(product.image);
     const blob = await response.blob();
     const imageFile = new File([blob], `${product.id}.jpg`, {
@@ -63,6 +66,8 @@ export function ProductDetails({ product, onClose }) {
       setSheetOpen(onClose);
     } catch (error) {
       console.log(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -105,8 +110,14 @@ export function ProductDetails({ product, onClose }) {
         </div>
       </div>
       <SheetFooter>
-        <Button onClick={addToCartProduct} className="w-full">
-          Add to Cart - ${(product.price * quantity).toFixed(2)}
+        <Button
+          disabled={isLoading}
+          onClick={addToCartProduct}
+          className="w-full"
+        >
+          {isLoading
+            ? "Adding a product..."
+            : `Add to Cart - $${(product.price * quantity).toFixed(2)}`}
         </Button>
       </SheetFooter>
     </>
