@@ -16,21 +16,64 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { Badge } from "@/components/ui/badge";
+import { userSession } from "@/lib/utils";
 
 const Header = () => {
   const router = useRouter();
   const [checkUser, setCheckUser] = useState(null);
+  const [favoriteProducts, setFavoriteProducts] = useState([]);
+  const [catalogProducts, setCatalogProducts] = useState([]);
 
   useEffect(() => {
     const checkUserSession = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await userSession();
       setCheckUser(user);
     };
 
     checkUserSession();
   }, []);
+
+  useEffect(() => {
+    if (checkUser) {
+      totalFavoriteProducts();
+      totalCatalogProducts();
+    }
+  }, [favoriteProducts, catalogProducts]);
+
+  const totalFavoriteProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("favorites")
+        .select()
+        .eq("user_id", checkUser.id);
+
+      if (error) {
+        console.error("Error fetching favorite products:", error);
+      } else {
+        setFavoriteProducts(data.length);
+      }
+    } catch (error) {
+      console.error("Error fetching favorite products:", error);
+    }
+  };
+
+  const totalCatalogProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select()
+        .eq("user_id", checkUser.id);
+
+      if (error) {
+        console.error("Error fetching catalog products:", error);
+      } else {
+        setCatalogProducts(data.length);
+      }
+    } catch (error) {
+      console.error("Error fetching favorite products:", error);
+    }
+  };
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -47,13 +90,19 @@ const Header = () => {
       {checkUser ? (
         <div className="flex items-center gap-5">
           <Link href={"/catalog"}>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" className="relative">
               <ShoppingCart className="size-5" />
+              <Badge className="absolute -top-2 -right-2 inline-flex items-center justify-center size-5 text-xs font-bold text-white bg-red-500 hover:bg-red-600 rounded-full">
+                {catalogProducts || 0}
+              </Badge>
             </Button>
           </Link>
           <Link href={"/favorites"}>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" className="relative">
               <Heart className="size-5" />
+              <Badge className="absolute -top-2 -right-2 inline-flex items-center justify-center size-5 text-xs font-bold text-white bg-red-500 hover:bg-red-600 rounded-full">
+                {favoriteProducts || 0}
+              </Badge>
             </Button>
           </Link>
           <DropdownMenu>

@@ -1,21 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import Header from "../main/header";
+import React, { useEffect, useState } from "react";
+import { FavoriteProductsCard } from "./products";
 import supabase from "@/lib/supabaseClient";
-import { CatalogProductsCard } from "./products";
+import Header from "../main/header";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { userSession } from "@/lib/utils";
 
-export default function CatalogProducts() {
+const FavoriteProducts = () => {
   const [checkUser, setCheckUser] = useState(null);
-  const [products, setProducts] = useState([]);
+  const [favoriteProducts, setFavoriteProducts] = useState([]);
 
   useEffect(() => {
     const checkUserSession = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await userSession();
       setCheckUser(user);
     };
 
@@ -24,48 +23,43 @@ export default function CatalogProducts() {
 
   useEffect(() => {
     if (checkUser) {
-      fetchCatalogProducts();
+      fetchFavoriteProducts();
     }
   }, [checkUser]);
 
-  const fetchCatalogProducts = async () => {
+  const fetchFavoriteProducts = async () => {
     try {
       const { data, error } = await supabase
-        .from("products")
+        .from("favorites")
         .select(
           `
           id,
           name,
           category,
           price,
-          image_url,
-          quantity`
+          image_url
+          `
         )
         .eq("user_id", checkUser.id);
 
       if (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching favorite products:", error);
       } else {
-        setProducts(data);
+        setFavoriteProducts(data);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching favorite products:", error);
     }
   };
 
-  const handleCheckOut = () => {};
   return (
     <div>
       <Header />
       <div className="px-10 py-6">
-        <h1 className="text-3xl font-semibold mb-6">Products Catalog</h1>
+        <h1 className="text-3xl font-semibold mb-6">Favorite Products</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {products.map((product) => (
-            <CatalogProductsCard
-              key={product.id}
-              product={product}
-              onCheckOut={handleCheckOut}
-            />
+          {favoriteProducts.map((product) => (
+            <FavoriteProductsCard key={product.id} product={product} />
           ))}
         </div>
         <div className="text-center">
@@ -76,4 +70,6 @@ export default function CatalogProducts() {
       </div>
     </div>
   );
-}
+};
+
+export default FavoriteProducts;

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import supabase from "@/lib/supabaseClient";
 import { Heart, ShoppingCart } from "lucide-react";
 import toast from "react-hot-toast";
+import { formatDate } from "@/lib/utils";
 
 export function ProductCard({ product, onAddToCart }) {
   const [checkUser, setCheckUser] = useState(null);
@@ -40,7 +41,7 @@ export function ProductCard({ product, onAddToCart }) {
     fetchFavoriteStatus();
   }, [checkUser, product.id]);
 
-  const toggleFavorite = async (e) => {
+  const addFavoriteProduct = async (e) => {
     e.stopPropagation();
 
     if (isFavorite) {
@@ -56,12 +57,52 @@ export function ProductCard({ product, onAddToCart }) {
 
       toast.success("Product removed from Favorites!");
     } else {
-      const { error } = await supabase
-        .from("favorites")
-        .insert({ user_id: checkUser.id, product_id: product.id });
+      const response = await fetch(product.image);
+      if (!response.ok) {
+        throw new Error("Failed to fetch image");
+      }
+      const blob = await response.blob();
+      const imageFile = new File([blob], `${product.id}.jpg`, {
+        type: blob.type,
+      });
 
-      if (error) {
-        console.error("Error adding to favorites:", error);
+      try {
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("favorite_product_images")
+          .upload(`private/product/${product.id}.jpg`, imageFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.log(uploadError);
+          throw uploadError;
+        }
+
+        const { data, error } = await supabase.storage
+          .from("favorite_product_images")
+          .createSignedUrl(`private/product/${product.id}.jpg`, 60);
+
+        if (error) {
+          throw error;
+        }
+
+        const { data: productData, error: dbError } = await supabase
+          .from("favorites")
+          .insert({
+            product_id: product.id,
+            created_at: formatDate(new Date()),
+            name: product.name,
+            category: product.category,
+            price: product.price,
+            image_url: data.signedUrl,
+          });
+
+        if (dbError) {
+          console.error("Error adding to favorites:", dbError);
+        }
+      } catch (error) {
+        console.log(error);
       }
 
       toast.success("Product added to Favorites!");
@@ -71,7 +112,7 @@ export function ProductCard({ product, onAddToCart }) {
   };
 
   return (
-    <Card className="overflow-hidden cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg">
+    <Card className="overflow-hidden cursor-pointer transition-all duration-300 ease-in-out hover:shadow-lg">
       <CardContent className="p-4">
         <div className="relative h-64 mb-4">
           <Image
@@ -88,7 +129,7 @@ export function ProductCard({ product, onAddToCart }) {
           <p className="text-xl font-bold text-primary">${product.price}</p>
           {checkUser && (
             <button
-              onClick={toggleFavorite}
+              onClick={addFavoriteProduct}
               className={`p-2 rounded-full transition-all duration-300 ease-in-out ${
                 isFavorite
                   ? "bg-rose-500 text-white"

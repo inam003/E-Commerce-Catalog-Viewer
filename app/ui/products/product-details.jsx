@@ -54,6 +54,7 @@ export function ProductDetails({ product, onClose }) {
       const { data: productData, error: dbError } = await supabase
         .from("products")
         .insert({
+          product_id: product.id,
           created_at: formatDate(new Date()),
           name: product.name,
           category: product.category,

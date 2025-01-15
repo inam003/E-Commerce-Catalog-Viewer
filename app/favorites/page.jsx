@@ -1,7 +1,12 @@
 import React from "react";
+import FavoriteProducts from "../ui/favorites/favorite-products";
 
-const Favorites = () => {
-  return <div>Favorites</div>;
+const FavoriteProductsPage = () => {
+  return (
+    <main className="container mx-auto ">
+      <FavoriteProducts />
+    </main>
+  );
 };
 
-export default Favorites;
+export default FavoriteProductsPage;
