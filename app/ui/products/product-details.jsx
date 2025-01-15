@@ -22,6 +22,9 @@ export function ProductDetails({ product, onClose }) {
     setIsLoading(true);
 
     const response = await fetch(product.image);
+    if (!response.ok) {
+      throw new Error("Failed to fetch image");
+    }
     const blob = await response.blob();
     const imageFile = new File([blob], `${product.id}.jpg`, {
       type: blob.type,
@@ -30,7 +33,7 @@ export function ProductDetails({ product, onClose }) {
     try {
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("product_images")
-        .upload(`private/product/${product.id}`, imageFile, {
+        .upload(`private/product/${product.id}.jpg`, imageFile, {
           cacheControl: "3600",
           upsert: false,
         });
@@ -42,7 +45,7 @@ export function ProductDetails({ product, onClose }) {
 
       const { data, error } = await supabase.storage
         .from("product_images")
-        .createSignedUrl(`private/product/${product.id}`, 60);
+        .createSignedUrl(`private/product/${product.id}.jpg`, 60);
 
       if (error) {
         throw error;
@@ -65,7 +68,8 @@ export function ProductDetails({ product, onClose }) {
       toast.success("Add to cart successfully");
       setSheetOpen(onClose);
     } catch (error) {
-      console.log(error.message);
+      console.error("Error adding product:", error);
+      toast.error("Failed to add product to cart.");
     } finally {
       setIsLoading(false);
     }

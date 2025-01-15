@@ -1,5 +1,5 @@
 import Hero from "./ui/main/hero";
-import ProductCategories from "./ui/main/product-categories";
+import ProductCategories from "./ui/catalog/product-categories";
 
 export default function Home() {
   return (

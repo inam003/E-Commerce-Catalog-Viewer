@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import supabase from "@/lib/supabaseClient";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import toast from "react-hot-toast";
 
 export function ProductCard({ product, onAddToCart }) {
@@ -29,7 +29,7 @@ export function ProductCard({ product, onAddToCart }) {
           .select()
           .eq("user_id", checkUser.id)
           .eq("product_id", product.id)
-          .single();
+          .maybeSingle();
 
         if (data && !error) {
           setIsFavorite(true);
@@ -73,7 +73,7 @@ export function ProductCard({ product, onAddToCart }) {
   return (
     <Card className="overflow-hidden cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg">
       <CardContent className="p-4">
-        <div className="relative h-48 mb-4">
+        <div className="relative h-64 mb-4">
           <Image
             src={product.image}
             alt={product.name}
@@ -101,6 +101,7 @@ export function ProductCard({ product, onAddToCart }) {
         </div>
         {checkUser && (
           <Button className="w-full mt-4" onClick={() => onAddToCart(product)}>
+            <ShoppingCart className="text-white size-5" />
             Add to Cart
           </Button>
         )}
